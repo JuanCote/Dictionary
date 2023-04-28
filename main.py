@@ -1,10 +1,11 @@
 import logging
+import os
 
 from aiogram import Bot, Dispatcher, executor, types, md
 
 from buttons import main_kb
 
-API_TOKEN = '6233616784:AAGFyW_nOdzybp9rHJ-u_x4N-4bL0JhTY9o'
+API_TOKEN = os.getenv('telegram-key')
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
