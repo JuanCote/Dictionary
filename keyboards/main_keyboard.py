@@ -4,11 +4,13 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 def main_kb():
     kb = InlineKeyboardBuilder()
-    kb.add(types.InlineKeyboardButton(
-        text="Add word to dictionary ➕",
-        callback_data="add_word")
+    kb.add(
+        types.InlineKeyboardButton(
+            text="Add word to dictionary ➕", callback_data="add_word"
+        )
     )
     return kb.as_markup()
+
 
 # main_kb = ReplyKeyboardMarkup(resize_keyboard=True)
 # add_btn = KeyboardButton('/Add')
