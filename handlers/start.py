@@ -1,16 +1,17 @@
 from aiogram import Bot, Router, types
 from aiogram.filters.command import Command
 from aiogram.filters.text import Text
+
 from helpers import edit_message
 from keyboards.main_keyboard import main_kb
 
 router = Router()
 
-MAIN_TEXT = 'Hello 👋\n This is custom dictionary bot 📖'
+MAIN_TEXT = 'Hello 👋\nThis is custom dictionary bot 📖'
 
 
 @router.message(Command('start'))
-async def start(message: types.Message):
+async def start(message: types.Message, bot: Bot):
     await message.answer(text=MAIN_TEXT, reply_markup=main_kb())
 
 

@@ -8,3 +8,6 @@ async def edit_message(bot: Bot, message: str,
     return await bot.edit_message_text(reply_markup=keyboard_fn(),
                                        message_id=message_id, text=message,
                                        chat_id=chat_id)
+
+
+

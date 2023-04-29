@@ -7,7 +7,7 @@ def add_action_kb(languages):
     for language in languages:
         kb.add(types.InlineKeyboardButton(
             text=language['label'],
-            callback_data=f"choose_language_{language['value']}"
+            callback_data=f"choose_language_{language['label']}"
         ))
 
     kb.add(types.InlineKeyboardButton(
