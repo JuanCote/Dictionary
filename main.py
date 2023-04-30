@@ -7,7 +7,7 @@ from handlers import add_word, start
 
 
 async def main():
-    API_TOKEN = os.getenv('TELEGRAM_KEY')
+    API_TOKEN = os.getenv("TELEGRAM_KEY")
 
     bot = Bot(token=API_TOKEN)
     dp = Dispatcher(storage=MemoryStorage())
@@ -17,6 +17,7 @@ async def main():
     dp.include_routers(start.router, add_word.router)
 
     await dp.start_polling(bot)
+
 
 if __name__ == "__main__":
     asyncio.run(main())

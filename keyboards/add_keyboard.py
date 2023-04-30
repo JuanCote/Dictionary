@@ -12,6 +12,6 @@ def add_action_kb(languages):
             )
         )
 
-    kb.add(types.InlineKeyboardButton(text="⬅️ Back", callback_data="back_to_main"))
+    kb.row(types.InlineKeyboardButton(text="⬅️ Back", callback_data="back_to_main"))
 
     return kb.as_markup()
