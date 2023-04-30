@@ -4,11 +4,11 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 def add_action_kb(languages):
     kb = InlineKeyboardBuilder()
-    for language in languages:
+    for i, language in enumerate(languages):
         kb.add(
             types.InlineKeyboardButton(
                 text=language["label"],
-                callback_data=f"choose_language_{language['label']}",
+                callback_data=f"choose_language_{i}",
             )
         )
 

@@ -1,4 +1,6 @@
 import asyncio
+from datetime import datetime
+
 from aiogram import Bot, Router, types
 from aiogram.filters.text import Text
 from aiogram.fsm.context import FSMContext
@@ -11,6 +13,7 @@ from helpers import edit_message
 from keyboards.add_keyboard import add_action_kb
 from keyboards.cancel_add_word import cancel_add_word_kb
 from keyboards.main_keyboard import main_kb
+from mongo_db import users
 
 router = Router()
 
@@ -42,9 +45,8 @@ async def add_word(callback: types.CallbackQuery, bot: Bot, state: FSMContext):
     FSMAddWord.language, lambda message: message.data.startswith("choose_language")
 )
 async def choose_language(callback: types.CallbackQuery, bot: Bot, state: FSMContext):
-    await state.update_data(language=callback.data.split("_")[-1])
+    await state.update_data(language_to=int(callback.data.split("_")[-1]))
     await state.set_state(FSMAddWord.word)
-
     await edit_message(
         bot=bot,
         callback=callback,
@@ -58,9 +60,9 @@ async def choose_word(message: types.Message, bot: Bot, state: FSMContext):
     await state.update_data(word=message.text)
     await state.set_state(FSMAddWord.translate)
     data = await state.get_data()
-    language = data["language"]
+    language = languages[data["language_to"]]
     await message.answer(
-        text=f"Now write a translation in <b>{language.lower()}</b>",
+        text=f"Now write a translation in <b>{language['label'].lower()}</b>",
         reply_markup=cancel_add_word_kb(),
         parse_mode="HTML",
     )
@@ -70,9 +72,14 @@ async def choose_word(message: types.Message, bot: Bot, state: FSMContext):
 async def choose_word(message: types.Message, bot: Bot, state: FSMContext):
     await state.update_data(translate=message.text)
     data = await state.get_data()
-    word, language = data["word"], data["language"]
-    print(await state.get_data())
-    await message.answer(text="The word was successfully added 🥳")
+    user_id = message.from_user.id
+    uuid = int(str(datetime.now().timestamp()).replace(".", ""))
+    data["uuid"] = uuid
+    try:
+        users.update_one({"user_id": user_id}, {"$push": {"dictionary": data}})
+        await message.answer(text="The word was successfully added 🥳")
+    except:
+        await message.answer(text="Иди ка ты нахуй дружок")
     await message.answer(text="Choose what you wanna do next 👀", reply_markup=main_kb())
     # End of work with state
     await state.clear()
