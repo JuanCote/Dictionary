@@ -3,7 +3,7 @@ import logging
 import asyncio
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram import Bot, Dispatcher
-from handlers import add_word, start
+from handlers import add_word, start, dictionary
 
 
 async def main():
@@ -14,7 +14,7 @@ async def main():
 
     logging.basicConfig(level=logging.INFO)
 
-    dp.include_routers(start.router, add_word.router)
+    dp.include_routers(start.router, add_word.router, dictionary.router)
 
     await dp.start_polling(bot)
 

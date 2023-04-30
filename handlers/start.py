@@ -14,10 +14,13 @@ MAIN_TEXT = "Hello 👋\nThis is custom dictionary bot 📖"
 
 @router.message(Command("start"))
 async def start(message: types.Message, bot: Bot):
-    user_id = message.from_user.id
-    user_in_db = users.find_one({"user_id": user_id})
-    if not user_in_db:
-        users.insert_one({"user_id": user_id, "dictionary": []})
+    try:
+        user_id = message.from_user.id
+        user_in_db = users.find_one({"user_id": user_id})
+        if not user_in_db:
+            users.insert_one({"user_id": user_id, "dictionary": []})
+    except:
+        await message.answer(text='DB ERROR')
     await message.answer(text=MAIN_TEXT, reply_markup=main_kb())
 
 

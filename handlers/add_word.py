@@ -79,7 +79,7 @@ async def choose_word(message: types.Message, bot: Bot, state: FSMContext):
         users.update_one({"user_id": user_id}, {"$push": {"dictionary": data}})
         await message.answer(text="The word was successfully added 🥳")
     except:
-        await message.answer(text="Иди ка ты нахуй дружок")
+        await message.answer(text="DB ERROR")
     await message.answer(text="Choose what you wanna do next 👀", reply_markup=main_kb())
     # End of work with state
     await state.clear()
