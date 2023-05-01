@@ -9,7 +9,7 @@ from mongo_db import users
 
 router = Router()
 
-MAIN_TEXT = "Hello 👋\nThis is custom dictionary bot 📖"
+MAIN_TEXT = "Custom dictionary bot 📖\nAdd new words to the dictionary. Repeat your words. View your own dictionaries."
 
 
 @router.message(Command("start"))
@@ -20,7 +20,7 @@ async def start(message: types.Message, bot: Bot):
         if not user_in_db:
             users.insert_one({"user_id": user_id, "dictionary": []})
     except:
-        await message.answer(text='DB ERROR')
+        await message.answer(text="DB ERROR")
     await message.answer(text=MAIN_TEXT, reply_markup=main_kb())
 
 
