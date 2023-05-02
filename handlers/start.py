@@ -13,7 +13,7 @@ MAIN_TEXT = "Custom dictionary bot 📖\nAdd new words to the dictionary. Repeat
 
 
 @router.message(Command("start"))
-async def start(message: types.Message, bot: Bot):
+async def start(message: types.Message):
     try:
         user_id = message.from_user.id
         user_in_db = users.find_one({"user_id": user_id})
