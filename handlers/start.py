@@ -18,7 +18,7 @@ async def start(message: types.Message):
         user_id = message.from_user.id
         user_in_db = users.find_one({"user_id": user_id})
         if not user_in_db:
-            users.insert_one({"user_id": user_id, "dictionary": []})
+            users.insert_one({"user_id": user_id, "dictionaries": {}})
     except:
         await message.answer(text="DB ERROR")
     await message.answer(text=MAIN_TEXT, reply_markup=main_kb())
