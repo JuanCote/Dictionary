@@ -30,13 +30,19 @@ async def flag(message: types.Message, bot: Bot, state: FSMContext):
     chat_id = message.chat.id
     user_id = message.from_user.id
     flag = message.text
+    user = users.find_one({'user_id': user_id})
     if not flag in languages_codes:
         await bot.send_message(
             chat_id=chat_id, text="There is no such flag in my list, please try again"
         )
     else:
-        await state.clear()
         code = tuple(languages_codes[flag].keys())[0]
-        users.update_one({'user_id': user_id}, {"$set": {f"dictionaries.{code}": []}})
-        await message.answer(text="The dictionary was successfully created 🥳")
-        await message.answer(text=MAIN_TEXT, reply_markup=main_kb())
+        if code in user['dictionaries']:
+            await bot.send_message(
+                chat_id=chat_id, text="You already have such a dictionary"
+            )
+        else:
+            await state.clear()
+            users.update_one({'user_id': user_id}, {"$set": {f"dictionaries.{code}": []}})
+            await message.answer(text="The dictionary was successfully created 🥳")
+            await message.answer(text=MAIN_TEXT, reply_markup=main_kb())
