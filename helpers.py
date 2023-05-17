@@ -3,8 +3,27 @@ from aiogram import Bot, types
 from mongo_db import users
 
 
+def make_center_word(total_length, word):
+    padding_length = total_length - len(word)
+    left_padding = padding_length // 2
+    print(left_padding, word)
+    right_padding = padding_length - left_padding + 1
+    centered_word = " " * left_padding + word + " " * right_padding
+    return centered_word
+
+
+def make_dict_row(first_word, second_word, room_for_one_word, dash_count):
+    first_centered_word = make_center_word(room_for_one_word, first_word.lower())
+    second_centered_word = make_center_word(room_for_one_word, second_word.lower())
+    return f"{'-' * dash_count}\n|{first_centered_word}|{second_centered_word}|\n"
+
+
 async def edit_message(
-    bot: Bot, message: str, callback: types.CallbackQuery, keyboard_fn=None
+    bot: Bot,
+    message: str,
+    callback: types.CallbackQuery,
+    keyboard_fn=None,
+    parse_mode="HTML",
 ):
     message_id = callback.message.message_id
     chat_id = callback.message.chat.id
@@ -13,6 +32,7 @@ async def edit_message(
         message_id=message_id,
         text=message,
         chat_id=chat_id,
+        parse_mode=parse_mode,
     )
 
 
@@ -32,6 +52,7 @@ def get_dictionaries(user_id):
                         }
                     )
         return dictionaries
+
 
 languages_codes = {
     "🇨🇳": {"ZH": "Китайский (中文)"},

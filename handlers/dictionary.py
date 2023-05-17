@@ -1,5 +1,5 @@
 from functools import partial
-
+from tabulate import tabulate
 from aiogram import Router, types, Bot
 from aiogram.client import bot
 from aiogram.filters import Text
@@ -7,20 +7,25 @@ from aiogram.filters.callback_data import CallbackData
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
 
-from handlers.add_word import languages
 from handlers.start import MAIN_TEXT
-from helpers import edit_message, languages_codes, get_dictionaries
+from helpers import (
+    make_center_word,
+    edit_message,
+    languages_codes,
+    get_dictionaries,
+    make_dict_row,
+)
 from keyboards.delete_word_keyboard import delete_word_kb
 from keyboards.dictionary_keyboard import choose_dict_kb
 from keyboards.main_keyboard import main_kb
 from keyboards.add_dictionary_keyboard import add_dictionary_kb
+from keyboards.no_words_in_dictionary_keyboard import no_words_in_dict_kb
 from mongo_db import users
 
 router = Router()
 
 
 class FSMDeleteWord(StatesGroup):
-    words = State()
     number = State()
 
 
@@ -44,11 +49,19 @@ async def choose_dictionary_language(callback: types.CallbackQuery, bot: Bot):
         )
 
 
+DASH_LENGTH = 52
+
+ROOM_FOR_ONE_WORD = 31
+
+first_word = "WORD"
+
+second_word = "TRANSLATION"
+
+
 @router.callback_query(lambda message: message.data.startswith("choose_dict_to_get"))
 async def get_words_dictionary(
     callback: types.CallbackQuery, bot: Bot, state: FSMContext
 ):
-    await state.set_state(FSMDeleteWord.words)
     language = callback.data.split("_")[-1]
     user_id = callback.from_user.id
     chat_id = callback.message.chat.id
@@ -56,31 +69,31 @@ async def get_words_dictionary(
         user = users.find_one({"user_id": user_id})
         words = user["dictionaries"][language]
         if words:
-            result = ""
-            delete_words = list()
-            for inx, elem in enumerate(words):
-                delete_words.append(elem)
-                word = elem["word"]
-                translate = elem["translate"]
-                result += f"{inx+1}. {word} - {translate}\n"
-            else:
-                await state.update_data(words=delete_words, code=language)
-                await bot.send_message(
-                    chat_id=chat_id, text=result, reply_markup=delete_word_kb()
-                )
-        else:
-            await bot.send_message(
-                chat_id=chat_id, text="There are no words in this dictionary"
+            table = [[item["word"], item["translate"]] for item in words]
+
+            print(
+                tabulate(table, headers=["word", "translation"], tablefmt="grid"),
             )
+            await edit_message(
+                bot=bot,
+                callback=callback,
+                keyboard_fn=partial(delete_word_kb, language),
+                message=f'<pre>{tabulate(table, headers=["word", "translation"], showindex=True, tablefmt="presto")}</pre>',
+            )
+        else:
+            await edit_message(
+                bot=bot,
+                callback=callback,
+                message="There are no words in this dictionary",
+                keyboard_fn=partial(no_words_in_dict_kb, language),
+            )
+
     except Exception as e:
         print(e)
         await bot.send_message(chat_id=chat_id, text="DB_ERROR", reply_markup=main_kb())
-    await bot.send_message(chat_id=chat_id, text=MAIN_TEXT, reply_markup=main_kb())
 
 
-@router.callback_query(
-    FSMDeleteWord.words, lambda message: message.data.startswith("delete_word")
-)
+@router.callback_query(lambda message: message.data.startswith("delete_word"))
 async def number_word(callback: types.CallbackQuery, state: FSMContext, bot: Bot):
     await state.set_state(FSMDeleteWord.number)
     chat_id = callback.message.chat.id
@@ -108,7 +121,8 @@ async def delete_word(message: types.Message, state: FSMContext):
         number = int(message.text)
         try:
             users.update_one(
-                {"user_id": user_id}, {"$pull": {f"dictionaries.{code}": words[number - 1]}}
+                {"user_id": user_id},
+                {"$pull": {f"dictionaries.{code}": words[number - 1]}},
             )
             await message.answer(text="The word has been removed from the dictionary")
             await message.answer(text=MAIN_TEXT, reply_markup=main_kb())

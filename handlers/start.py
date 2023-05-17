@@ -9,7 +9,10 @@ from mongo_db import users
 
 router = Router()
 
-MAIN_TEXT = "Custom dictionary bot 📖\nAdd new words to the dictionary. Repeat your words. View your own dictionaries."
+MAIN_TEXT = """Custom dictionary bot 📖
+Add new words to the dictionary ⭐
+Repeat your words ♻️
+View your own dictionaries 👀"""
 
 
 @router.message(Command("start"))

@@ -22,21 +22,13 @@ router = Router()
 
 
 class FSMAddWord(StatesGroup):
-    code = State()
     word = State()
     check_input = State()
     add_to_db = State()
 
 
-languages = (
-    {"value": "RU", "label": "Russian 🇷🇺"},
-    {"value": "SP", "label": "Spanish 🇪🇸"},
-)
-
-
 @router.callback_query(Text("add_word"))
 async def add_word(callback: types.CallbackQuery, bot: Bot, state: FSMContext):
-    await state.set_state(FSMAddWord.code)
     user_id = callback.from_user.id
     chat_id = callback.message.chat.id
     dictionaries = get_dictionaries(user_id)
@@ -56,9 +48,7 @@ async def add_word(callback: types.CallbackQuery, bot: Bot, state: FSMContext):
         )
 
 
-@router.callback_query(
-    FSMAddWord.code, lambda message: message.data.startswith("choose_dict_to_add")
-)
+@router.callback_query(lambda message: message.data.startswith("choose_dict_to_add"))
 async def choose_language(callback: types.CallbackQuery, bot: Bot, state: FSMContext):
     code = callback.data.split("_")[-1]
     for elem in languages_codes:
@@ -102,13 +92,13 @@ async def check_input(message: types.Message, state: FSMContext):
 @router.callback_query(FSMAddWord.add_to_db, Text("add_word_db"))
 async def choose_word(callback: types.CallbackQuery, state: FSMContext, bot: Bot):
     data = await state.get_data()
-    data_to_push = {
-        'word': data['word'],
-        'translate': data['translate']
-    }
+    data_to_push = {"word": data["word"], "translate": data["translate"]}
     user_id = callback.from_user.id
     try:
-        users.update_one({"user_id": user_id}, {"$push": {f"dictionaries.{data['code']}": data_to_push}})
+        users.update_one(
+            {"user_id": user_id},
+            {"$push": {f"dictionaries.{data['code']}": data_to_push}},
+        )
         await callback.answer(text="The word was successfully added 🥳")
     except:
         await callback.answer(text="DB ERROR")
