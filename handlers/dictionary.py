@@ -1,25 +1,19 @@
 from functools import partial
 from tabulate import tabulate
 from aiogram import Router, types, Bot
-from aiogram.client import bot
 from aiogram.filters import Text
-from aiogram.filters.callback_data import CallbackData
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
 
-from handlers.start import MAIN_TEXT
 from helpers import (
-    make_center_word,
     edit_message,
-    languages_codes,
     get_dictionaries,
-    make_dict_row,
 )
-from keyboards.delete_word_keyboard import delete_word_kb
-from keyboards.dictionary_keyboard import choose_dict_kb
+from keyboards.dictionary.back_to_dictionary_keyboard import back_to_dict_kb
+from keyboards.dictionary.dictionary_keyboard import choose_dict_kb
 from keyboards.main_keyboard import main_kb
 from keyboards.add_dictionary_keyboard import add_dictionary_kb
-from keyboards.no_words_in_dictionary_keyboard import no_words_in_dict_kb
+from keyboards.dictionary.no_words_in_dictionary_keyboard import no_words_in_dict_kb
 from mongo_db import users
 
 router = Router()
@@ -69,15 +63,15 @@ async def get_words_dictionary(
         user = users.find_one({"user_id": user_id})
         words = user["dictionaries"][language]
         if words:
+            # Ability to get into the delete handler
+            await state.set_state(FSMDeleteWord.number)
+            await state.update_data(code=language, words=words)
             table = [[item["word"], item["translate"]] for item in words]
 
-            print(
-                tabulate(table, headers=["word", "translation"], tablefmt="grid"),
-            )
             await edit_message(
                 bot=bot,
                 callback=callback,
-                keyboard_fn=partial(delete_word_kb, language),
+                keyboard_fn=back_to_dict_kb,
                 message=f'<pre>{tabulate(table, headers=["word", "translation"], showindex=True, tablefmt="presto")}</pre>',
             )
         else:
@@ -93,40 +87,36 @@ async def get_words_dictionary(
         await bot.send_message(chat_id=chat_id, text="DB_ERROR", reply_markup=main_kb())
 
 
-@router.callback_query(lambda message: message.data.startswith("delete_word"))
-async def number_word(callback: types.CallbackQuery, state: FSMContext, bot: Bot):
-    await state.set_state(FSMDeleteWord.number)
-    chat_id = callback.message.chat.id
-    await bot.send_message(
-        chat_id=chat_id, text="Enter the number of the word you want to delete"
-    )
-
-
 @router.message(FSMDeleteWord.number)
 async def delete_word(message: types.Message, state: FSMContext):
     chat_id = message.chat.id
     user_id = message.from_user.id
     data = await state.get_data()
-    words, code = data["words"], data["code"]
-    if (
-        not message.text.isdigit()
-        or int(message.text) > len(words)
-        or int(message.text) == 0
-    ):
-        await message.answer(
-            text="You should enter a number that should indicate a word in the dictionary"
+    words, word, code = data["words"], message.text, data["code"]
+    word_to_delete = None
+    for elem in words:
+        if word == elem["word"]:
+            word_to_delete = elem
+            break
+    if word_to_delete:
+        words.remove(word_to_delete)
+        users.update_one(
+            {"user_id": user_id},
+            {"$pull": {f"dictionaries.{code}": word_to_delete}},
         )
-    else:
         await state.clear()
-        number = int(message.text)
-        try:
-            users.update_one(
-                {"user_id": user_id},
-                {"$pull": {f"dictionaries.{code}": words[number - 1]}},
+        if words:
+            table = [[item["word"], item["translate"]] for item in words]
+
+            await message.answer(
+                reply_markup=back_to_dict_kb(),
+                parse_mode="HTML",
+                text=f'<pre>{tabulate(table, headers=["word", "translation"], showindex=True, tablefmt="presto")}</pre>',
             )
-            await message.answer(text="The word has been removed from the dictionary")
-            await message.answer(text=MAIN_TEXT, reply_markup=main_kb())
-        except Exception as e:
-            print(e)
-            await message.answer(text="DB ERROR")
-            await message.answer(text=MAIN_TEXT, reply_markup=main_kb())
+        else:
+            await message.answer(
+                text="There are no words in this dictionary",
+                reply_markup=no_words_in_dict_kb(code),
+            )
+    else:
+        await message.answer(text="❌ Wrong word ❌")

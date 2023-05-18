@@ -1,7 +1,4 @@
-import asyncio
-from datetime import datetime
-
-from aiogram import Bot, Router, types, F
+from aiogram import Bot, Router, types
 from aiogram.filters.text import Text
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
@@ -11,11 +8,9 @@ from handlers.start import MAIN_TEXT
 
 from helpers import edit_message, get_dictionaries, languages_codes
 from keyboards.add_dictionary_keyboard import add_dictionary_kb
-from keyboards.add_keyboard import add_action_kb
-from keyboards.cancel_add_word_keyboard import cancel_add_word_kb
-from keyboards.dictionary_keyboard import choose_dict_kb
+from keyboards.add_word.add_word_keyboard import add_action_kb
 from keyboards.main_keyboard import main_kb
-from keyboards.validate_add_word_keyboard import validate_add_word
+from keyboards.add_word.validate_add_word_keyboard import validate_add_word
 from mongo_db import users
 
 router = Router()
