@@ -72,7 +72,7 @@ async def get_words_dictionary(
                 bot=bot,
                 callback=callback,
                 keyboard_fn=back_to_dict_kb,
-                message=f'<pre>{tabulate(table, headers=["word", "translation"], showindex=True, tablefmt="presto")}</pre>',
+                message=f'<pre>{tabulate(table, headers=["word", "translation"], showindex=True, tablefmt="presto")}</pre>\n\nTo delete a word, write it',
             )
         else:
             await edit_message(
@@ -111,7 +111,7 @@ async def delete_word(message: types.Message, state: FSMContext):
             await message.answer(
                 reply_markup=back_to_dict_kb(),
                 parse_mode="HTML",
-                text=f'<pre>{tabulate(table, headers=["word", "translation"], showindex=True, tablefmt="presto")}</pre>',
+                text=f'<pre>{tabulate(table, headers=["word", "translation"], showindex=True, tablefmt="presto")}</pre>\n\nTo delete a word, write it',
             )
         else:
             await message.answer(
