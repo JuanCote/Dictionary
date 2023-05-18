@@ -7,10 +7,10 @@ def incr_visible_words_kb(code, type):
         [
             [
                 types.InlineKeyboardButton(
-                    text=f"Show 1 more {type}", callback_data=f"increment_{type}_by_1"
+                    text=f"Show 1 more {type}", callback_data=f"print_words_{type}_1"
                 ),
                 types.InlineKeyboardButton(
-                    text=f"Show 5 more {type}", callback_data=f"increment_{type}_by_5"
+                    text=f"Show 5 more {type}", callback_data=f"increment_{type}_5"
                 ),
             ],
             [

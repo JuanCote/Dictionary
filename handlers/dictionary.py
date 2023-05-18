@@ -93,19 +93,31 @@ async def get_words_dictionary(
 async def print_words(callback: types.CallbackQuery, bot: Bot, state: FSMContext):
     await state.set_state(FSMDeleteWord.number)
     data = await state.get_data()
+    print_style, incr_number = (
+        callback.data.split("_")[-2],
+        int(callback.data.split("_")[-1]),
+    )
     words, code, visible_translations, visible_words = (
         data["words"],
         data["code"],
         data["visible_translations"],
         data["visible_words"],
     )
-    print_style = callback.data.split("_")[-1]
     match print_style:
         case "word":
+            match incr_number:
+                case 1:
+                    visible_words += 1
+                    await state.update_data(visible_words=visible_words)
+                case 5:
+                    visible_words += 5
+                    await state.update_data(visible_words=visible_words)
+                case 0:
+                    random.shuffle(words)
             text = ""
-            random.shuffle(words)
+            await state.set_state(FSMDeleteWord.print)
             for idx, word in enumerate(words):
-                text += f'{word["word"] if idx < visible_translations else "*" * 10} - {word["translate"]}\n'
+                text += f'{word["word"] if idx < visible_words else "*" * 10} - {word["translate"]}\n'
             await edit_message(
                 bot=bot,
                 callback=callback,
@@ -116,7 +128,7 @@ async def print_words(callback: types.CallbackQuery, bot: Bot, state: FSMContext
             text = ""
             random.shuffle(words)
             for idx, word in enumerate(words):
-                text += f'{word["word"]} - {word["translate"] if idx < visible_words else "*" * 10}\n'
+                text += f'{word["word"]} - {word["translate"] if idx < visible_translations else "*" * 10}\n'
             await edit_message(
                 bot=bot,
                 callback=callback,
@@ -166,10 +178,3 @@ async def delete_word(message: types.Message, state: FSMContext):
             )
     else:
         await message.answer(text="❌ Wrong word ❌")
-
-
-@router.callback_query(F.data.startswith("increment_"))
-async def increment_showed(callback: types.CallbackQuery, bot: Bot, state: FSMContext):
-    data = callback.data.split("_")
-    amount = data[-1]
-    type = data[2]
