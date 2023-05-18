@@ -11,7 +11,11 @@ def add_action_kb(languages):
                 callback_data=f"choose_dict_to_add_{language['code']}",
             )
         )
-    kb.row(types.InlineKeyboardButton(text="Create new dictionary", callback_data="add_dictionary"))
+    kb.row(
+        types.InlineKeyboardButton(
+            text="Create new dictionary", callback_data="add_dictionary"
+        )
+    )
     kb.add(types.InlineKeyboardButton(text="⬅️ Back", callback_data="back_to_main"))
 
     return kb.as_markup()

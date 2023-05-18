@@ -1,17 +1,19 @@
+import random
+
 from functools import partial
 from tabulate import tabulate
-from aiogram import Router, types, Bot
+from aiogram import Router, types, Bot, F
 from aiogram.utils import markdown as md
 from aiogram.filters import Text
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
-
 from helpers import (
     edit_message,
     get_dictionaries,
 )
 from keyboards.dictionary.back_to_dictionary_keyboard import back_to_dict_kb
 from keyboards.dictionary.dictionary_keyboard import choose_dict_kb
+from keyboards.dictionary.incr_visible_words import incr_visible_words_kb
 from keyboards.dictionary.table_style_keyboard import table_style_kb
 from keyboards.main_keyboard import main_kb
 from keyboards.add_dictionary_keyboard import add_dictionary_kb
@@ -61,13 +63,14 @@ async def get_words_dictionary(
 ):
     language = callback.data.split("_")[-1]
     user_id = callback.from_user.id
-    chat_id = callback.message.chat.id
     user = users.find_one({"user_id": user_id})
     words = user["dictionaries"][language]
     if words:
         # Ability to get into the delete handler
         await state.set_state(FSMDeleteWord.print)
-        await state.update_data(code=language, words=words)
+        await state.update_data(
+            code=language, words=words, visible_translations=0, visible_words=0
+        )
         await edit_message(
             bot=bot,
             callback=callback,
@@ -84,44 +87,50 @@ async def get_words_dictionary(
         )
 
 
-@router.callback_query(FSMDeleteWord.print, lambda message: message.data.startswith("print_words_"))
+@router.callback_query(
+    FSMDeleteWord.print, lambda message: message.data.startswith("print_words_")
+)
 async def print_words(callback: types.CallbackQuery, bot: Bot, state: FSMContext):
-    chat_id = callback.message.chat.id
     await state.set_state(FSMDeleteWord.number)
     data = await state.get_data()
-    words, code = data["words"], data["code"]
-    print_style = callback.data.split('_')[-1]
-    # If the selected style is equal to the sketched word
-    if print_style == 'word':
-        text = ''
-        for word in words:
-            text += f'<tg-spoiler>{word["word"]}</tg-spoiler> - {word["translate"]}\n'
-        await edit_message(
-            bot=bot,
-            callback=callback,
-            keyboard_fn=partial(back_to_dict_kb, code),
-            message=f'{text}\n\nTo delete a word, write it',
-        )
-    # If the selected style is equal to the sketched translate
-    elif print_style == 'translate':
-        text = ''
-        for word in words:
-            text += f'{word["word"]} - <tg-spoiler>{word["translate"]}</tg-spoiler>\n'
-        await edit_message(
-            bot=bot,
-            callback=callback,
-            keyboard_fn=partial(back_to_dict_kb, code),
-            message=f'{text}\n\nTo delete a word, write it',
-        )
-    # If style is equal to normal word table
-    elif print_style == 'plain':
-        table = [[item["word"], item["translate"]] for item in words]
-        await edit_message(
-            bot=bot,
-            callback=callback,
-            keyboard_fn=partial(back_to_dict_kb, code),
-            message=f'<pre>{tabulate(table, headers=["word", "translation"], showindex=True, tablefmt="presto")}</pre>\n\nTo delete a word, write it',
-        )
+    words, code, visible_translations, visible_words = (
+        data["words"],
+        data["code"],
+        data["visible_translations"],
+        data["visible_words"],
+    )
+    print_style = callback.data.split("_")[-1]
+    match print_style:
+        case "word":
+            text = ""
+            random.shuffle(words)
+            for idx, word in enumerate(words):
+                text += f'{word["word"] if idx < visible_translations else "*" * 10} - {word["translate"]}\n'
+            await edit_message(
+                bot=bot,
+                callback=callback,
+                keyboard_fn=partial(incr_visible_words_kb, code, type="word"),
+                message=f"{text}\n\nTo delete a word, write it",
+            )
+        case "translate":
+            text = ""
+            random.shuffle(words)
+            for idx, word in enumerate(words):
+                text += f'{word["word"]} - {word["translate"] if idx < visible_words else "*" * 10}\n'
+            await edit_message(
+                bot=bot,
+                callback=callback,
+                keyboard_fn=partial(incr_visible_words_kb, code, type="translate"),
+                message=f"{text}\n\nTo delete a word, write it",
+            )
+        case "plain":
+            table = [[item["word"], item["translate"]] for item in words]
+            await edit_message(
+                bot=bot,
+                callback=callback,
+                keyboard_fn=partial(back_to_dict_kb, code),
+                message=f'<pre>{tabulate(table, headers=["word", "translation"],  tablefmt="presto")}</pre>\n\nTo delete a word, write it',
+            )
 
 
 @router.message(FSMDeleteWord.number)
@@ -157,3 +166,10 @@ async def delete_word(message: types.Message, state: FSMContext):
             )
     else:
         await message.answer(text="❌ Wrong word ❌")
+
+
+@router.callback_query(F.data.startswith("increment_"))
+async def increment_showed(callback: types.CallbackQuery, bot: Bot, state: FSMContext):
+    data = callback.data.split("_")
+    amount = data[-1]
+    type = data[2]

@@ -14,7 +14,9 @@ async def main():
 
     logging.basicConfig(level=logging.INFO)
 
-    dp.include_routers(start.router, add_word.router, dictionary.router, add_dictionary.router)
+    dp.include_routers(
+        start.router, add_word.router, dictionary.router, add_dictionary.router
+    )
 
     await dp.start_polling(bot)
 
