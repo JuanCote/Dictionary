@@ -99,7 +99,7 @@ async def print_words(callback: types.CallbackQuery, bot: Bot, state: FSMContext
         await edit_message(
             bot=bot,
             callback=callback,
-            keyboard_fn=back_to_dict_kb,
+            keyboard_fn=partial(back_to_dict_kb, code),
             message=f'{text}\n\nTo delete a word, write it',
         )
     # If the selected style is equal to the sketched translate
@@ -110,7 +110,7 @@ async def print_words(callback: types.CallbackQuery, bot: Bot, state: FSMContext
         await edit_message(
             bot=bot,
             callback=callback,
-            keyboard_fn=back_to_dict_kb,
+            keyboard_fn=partial(back_to_dict_kb, code),
             message=f'{text}\n\nTo delete a word, write it',
         )
     # If style is equal to normal word table
@@ -119,7 +119,7 @@ async def print_words(callback: types.CallbackQuery, bot: Bot, state: FSMContext
         await edit_message(
             bot=bot,
             callback=callback,
-            keyboard_fn=back_to_dict_kb,
+            keyboard_fn=partial(back_to_dict_kb, code),
             message=f'<pre>{tabulate(table, headers=["word", "translation"], showindex=True, tablefmt="presto")}</pre>\n\nTo delete a word, write it',
         )
 
@@ -146,7 +146,7 @@ async def delete_word(message: types.Message, state: FSMContext):
             table = [[item["word"], item["translate"]] for item in words]
 
             await message.answer(
-                reply_markup=back_to_dict_kb(),
+                reply_markup=back_to_dict_kb(code),
                 parse_mode="HTML",
                 text=f'<pre>{tabulate(table, headers=["word", "translation"], showindex=True, tablefmt="presto")}</pre>\n\nTo delete a word, write it',
             )
