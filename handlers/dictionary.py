@@ -91,7 +91,6 @@ async def get_words_dictionary(
     FSMDeleteWord.print, lambda message: message.data.startswith("print_words_")
 )
 async def print_words(callback: types.CallbackQuery, bot: Bot, state: FSMContext):
-    await state.set_state(FSMDeleteWord.number)
     data = await state.get_data()
     print_style, incr_number = (
         callback.data.split("_")[-2],
@@ -105,6 +104,7 @@ async def print_words(callback: types.CallbackQuery, bot: Bot, state: FSMContext
     )
     match print_style:
         case "word":
+            flag_hide_1, flag_hide_5 = False, False
             match incr_number:
                 case 1:
                     visible_words += 1
@@ -114,28 +114,49 @@ async def print_words(callback: types.CallbackQuery, bot: Bot, state: FSMContext
                     await state.update_data(visible_words=visible_words)
                 case 0:
                     random.shuffle(words)
+            if len(words) - visible_words < 5:
+                flag_hide_5 = True
+            if len(words) == visible_words:
+                flag_hide_1 = True
             text = ""
-            await state.set_state(FSMDeleteWord.print)
             for idx, word in enumerate(words):
                 text += f'{word["word"] if idx < visible_words else "*" * 10} - {word["translate"]}\n'
             await edit_message(
                 bot=bot,
                 callback=callback,
-                keyboard_fn=partial(incr_visible_words_kb, code, type="word"),
-                message=f"{text}\n\nTo delete a word, write it",
+                keyboard_fn=partial(
+                    incr_visible_words_kb, code, "word", flag_hide_1, flag_hide_5
+                ),
+                message=text,
             )
         case "translate":
+            flag_hide_1, flag_hide_5 = False, False
+            match incr_number:
+                case 1:
+                    visible_translations += 1
+                    await state.update_data(visible_translations=visible_translations)
+                case 5:
+                    visible_translations += 5
+                    await state.update_data(visible_translations=visible_translations)
+                case 0:
+                    random.shuffle(words)
+            if len(words) - visible_translations < 5:
+                flag_hide_5 = True
+            if len(words) == visible_translations:
+                flag_hide_1 = True
             text = ""
-            random.shuffle(words)
             for idx, word in enumerate(words):
                 text += f'{word["word"]} - {word["translate"] if idx < visible_translations else "*" * 10}\n'
             await edit_message(
                 bot=bot,
                 callback=callback,
-                keyboard_fn=partial(incr_visible_words_kb, code, type="translate"),
-                message=f"{text}\n\nTo delete a word, write it",
+                keyboard_fn=partial(
+                    incr_visible_words_kb, code, "translate", flag_hide_1, flag_hide_5
+                ),
+                message=text,
             )
         case "plain":
+            await state.set_state(FSMDeleteWord.number)
             table = [[item["word"], item["translate"]] for item in words]
             await edit_message(
                 bot=bot,
@@ -157,19 +178,20 @@ async def delete_word(message: types.Message, state: FSMContext):
             word_to_delete = elem
             break
     if word_to_delete:
-        words.remove(word_to_delete)
+        words = list(filter(lambda a: a != word_to_delete, words))
+        await state.update_data(words=words)
         users.update_one(
             {"user_id": user_id},
             {"$pull": {f"dictionaries.{code}": word_to_delete}},
         )
-        await state.clear()
+        await state.set_state(FSMDeleteWord.number)
         if words:
             table = [[item["word"], item["translate"]] for item in words]
 
             await message.answer(
                 reply_markup=back_to_dict_kb(code),
                 parse_mode="HTML",
-                text=f'<pre>{tabulate(table, headers=["word", "translation"], showindex=True, tablefmt="presto")}</pre>\n\nTo delete a word, write it',
+                text=f'<pre>{tabulate(table, headers=["word", "translation"], tablefmt="presto")}</pre>\n\nTo delete a word, write it',
             )
         else:
             await message.answer(
