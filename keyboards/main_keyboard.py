@@ -6,10 +6,10 @@ def main_kb():
     kb = InlineKeyboardBuilder()
     kb.add(
         types.InlineKeyboardButton(
-            text="Add word to dictionary ➕", callback_data="add_word"
+            text="➕ Add word to dictionary", callback_data="add_word"
         ),
     )
-    kb.row(types.InlineKeyboardButton(text="Dictionary", callback_data="dictionary"))
+    kb.row(types.InlineKeyboardButton(text="📖 Dictionary", callback_data="dictionary"))
     return kb.as_markup()
 
 

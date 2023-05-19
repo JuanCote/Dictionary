@@ -43,14 +43,14 @@ async def choose_dictionary_language(callback: types.CallbackQuery, bot: Bot):
         await edit_message(
             bot=bot,
             callback=callback,
-            message="📖 You don't have any dictionaries yet, please add some 👀",
+            message="🤷‍♂️ You don't have any dictionaries yet, please add some",
             keyboard_fn=add_dictionary_kb,
         )
     else:
         await edit_message(
             bot=bot,
             callback=callback,
-            message="📖 Choose dictionary 👀",
+            message="👀 Choose dictionary",
             keyboard_fn=partial(choose_dict_kb, dictionaries),
         )
 
@@ -72,7 +72,7 @@ async def get_words_dictionary(
         await edit_message(
             bot=bot,
             callback=callback,
-            message="Choose how to display the dictionary",
+            message="🔍 Choose how to display the dictionary",
             keyboard_fn=table_style_kb,
         )
 
@@ -80,7 +80,7 @@ async def get_words_dictionary(
         await edit_message(
             bot=bot,
             callback=callback,
-            message="There are no words in this dictionary",
+            message="🤷‍♂️ There are no words in this dictionary",
             keyboard_fn=partial(no_words_in_dict_kb, language),
         )
 
