@@ -1,6 +1,13 @@
+
 from aiogram import Bot, types
+from translate import Translator
 
 from mongo_db import users
+
+
+def translate_word(to_lang, word):
+    translator = Translator(from_lang='en', to_lang=to_lang)
+    return translator.translate(word).lower()
 
 
 def make_center_word(total_length, word):
