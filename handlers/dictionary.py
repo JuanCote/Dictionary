@@ -2,8 +2,7 @@ import random
 
 from functools import partial
 from tabulate import tabulate
-from aiogram import Router, types, Bot, F
-from aiogram.utils import markdown as md
+from aiogram import Router, types, Bot
 from aiogram.filters import Text
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
@@ -15,8 +14,7 @@ from keyboards.dictionary.back_to_dictionary_keyboard import back_to_dict_kb
 from keyboards.dictionary.dictionary_keyboard import choose_dict_kb
 from keyboards.dictionary.incr_visible_words import incr_visible_words_kb
 from keyboards.dictionary.table_style_keyboard import table_style_kb
-from keyboards.main_keyboard import main_kb
-from keyboards.add_dictionary_keyboard import add_dictionary_kb
+from keyboards.add_dictionary.add_dictionary_keyboard import add_dictionary_kb
 from keyboards.dictionary.no_words_in_dictionary_keyboard import no_words_in_dict_kb
 from mongo_db import users
 

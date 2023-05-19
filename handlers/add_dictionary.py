@@ -1,10 +1,13 @@
+from functools import partial
+
 from aiogram import Router, types, Bot
 from aiogram.filters import Text
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
 
 from handlers.start import MAIN_TEXT
-from helpers import languages_codes
+from helpers import languages_codes, edit_message
+from keyboards.cancel_keyboard import cancel_kb
 from keyboards.main_keyboard import main_kb
 from mongo_db import users
 
@@ -18,10 +21,11 @@ class FSMDeleteWord(StatesGroup):
 @router.callback_query(Text("add_dictionary"))
 async def add_dictionary(callback: types.CallbackQuery, bot: Bot, state: FSMContext):
     await state.set_state(FSMDeleteWord.flag)
-    chat_id = callback.message.chat.id
-    await bot.send_message(
-        chat_id=chat_id,
-        text="Enter the language flag for which you want to add a dictionary",
+    await edit_message(
+        callback=callback,
+        bot=bot,
+        message="Enter the language flag for which you want to add a dictionary",
+        keyboard_fn=partial(cancel_kb, 'back_to_main')
     )
 
 

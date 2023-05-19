@@ -7,8 +7,9 @@ from functools import partial
 from handlers.start import MAIN_TEXT
 
 from helpers import edit_message, get_dictionaries, languages_codes
-from keyboards.add_dictionary_keyboard import add_dictionary_kb
+from keyboards.add_dictionary.add_dictionary_keyboard import add_dictionary_kb
 from keyboards.add_word.add_word_keyboard import add_action_kb
+from keyboards.cancel_keyboard import cancel_kb
 from keyboards.main_keyboard import main_kb
 from keyboards.add_word.validate_add_word_keyboard import validate_add_word
 from mongo_db import users
@@ -55,6 +56,7 @@ async def choose_language(callback: types.CallbackQuery, bot: Bot, state: FSMCon
         bot=bot,
         callback=callback,
         message="Write a word in your native language ⭐️",
+        keyboard_fn=partial(cancel_kb, 'add_word'),
     )
 
 
@@ -66,6 +68,7 @@ async def choose_word(message: types.Message, state: FSMContext):
     await message.answer(
         text=f"Now write a translation in <b>{data['label']}</b>",
         parse_mode="HTML",
+        reply_markup=cancel_kb('add_word'),
     )
 
 
