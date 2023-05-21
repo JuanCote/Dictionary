@@ -32,14 +32,14 @@ async def add_word(callback: types.CallbackQuery, bot: Bot, state: FSMContext):
         await edit_message(
             bot=bot,
             callback=callback,
-            message="👀 You don't have any dictionaries yet, please add some",
+            message="👀 You don't have any dictionaries yet",
             keyboard_fn=add_dictionary_kb,
         )
     else:
         await edit_message(
             bot=bot,
             callback=callback,
-            message="Choose dictionary 🇺🇳",
+            message="🇺🇳 Choose dictionary",
             keyboard_fn=partial(add_action_kb, dictionaries),
         )
 
@@ -64,7 +64,7 @@ async def choose_language(callback: types.CallbackQuery, bot: Bot, state: FSMCon
 async def ask_translate(message: types.Message, state: FSMContext):
     word = message.text.strip()
     data = await state.get_data()
-    translate = translate_word(to_lang=data['code'], word=word)
+    translate = translate_word(to_lang=data["code"], word=word)
     await state.update_data(word=word, translate=translate)
     await message.answer(
         text=f"Automatic translation - {translate} in <b>{data['label']}</b>",

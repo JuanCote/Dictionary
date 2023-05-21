@@ -6,7 +6,7 @@ def add_dictionary_kb():
     kb = InlineKeyboardBuilder()
     kb.row(
         types.InlineKeyboardButton(
-            text="⬅️ Add dictionary", callback_data="add_dictionary"
+            text="➕ Add dictionary", callback_data="add_dictionary"
         )
     )
 
