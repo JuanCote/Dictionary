@@ -32,7 +32,7 @@ async def add_word(callback: types.CallbackQuery, bot: Bot, state: FSMContext):
         await edit_message(
             bot=bot,
             callback=callback,
-            message="👀 You don't have any dictionaries yet, please add some",
+            message="You don't have any dictionaries yet, please add some 👀",
             keyboard_fn=add_dictionary_kb,
         )
     else:

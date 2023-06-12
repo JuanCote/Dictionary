@@ -61,6 +61,19 @@ def get_dictionaries(user_id):
         return dictionaries
 
 
+def delete_dictionary_from_db(user_id: int, dict_code: str):
+    return users.update_one(
+        {"user_id": user_id},
+        {"$unset": {f"dictionaries.{dict_code}": ""}},
+    )
+
+
+def get_dict_label_by_code(dict_code: str):
+    for elem in languages_codes:
+        if dict_code in languages_codes[elem]:
+            return languages_codes[elem][dict_code]
+
+
 languages_codes = {
     "🇨🇳": {"ZH": "中文"},
     "🇯🇵": {"JP": "日本語"},

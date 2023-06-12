@@ -24,7 +24,7 @@ async def add_dictionary(callback: types.CallbackQuery, bot: Bot, state: FSMCont
     await edit_message(
         callback=callback,
         bot=bot,
-        message="Enter the language flag for which you want to add a dictionary",
+        message="Enter the language flag for which you want to add a dictionary 🚩",
         keyboard_fn=partial(cancel_kb, 'back_to_main')
     )
 
@@ -37,7 +37,7 @@ async def flag(message: types.Message, bot: Bot, state: FSMContext):
     user = users.find_one({"user_id": user_id})
     if not flag in languages_codes:
         await bot.send_message(
-            chat_id=chat_id, text="There is no such flag in my list, please try again"
+            chat_id=chat_id, text="There is no such flag in my list, please try again ⁉️"
         )
     else:
         code = tuple(languages_codes[flag].keys())[0]

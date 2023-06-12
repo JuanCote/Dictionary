@@ -10,6 +10,7 @@ def main_kb():
         ),
     )
     kb.row(types.InlineKeyboardButton(text="📖 Dictionary", callback_data="dictionary"))
+    kb.row(types.InlineKeyboardButton(text="⚙️ Settings", callback_data="settings"))
     return kb.as_markup()
 
 
