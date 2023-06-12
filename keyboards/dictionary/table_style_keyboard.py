@@ -7,7 +7,7 @@ def table_style_kb():
         [
             [
                 types.InlineKeyboardButton(
-                    text="Plain table", callback_data="print_words_plain_0"
+                    text="Plain table", callback_data="print_words_table_0"
                 ),
             ],
             [

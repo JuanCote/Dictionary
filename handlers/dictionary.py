@@ -153,7 +153,7 @@ async def print_words(callback: types.CallbackQuery, bot: Bot, state: FSMContext
                 ),
                 message=text,
             )
-        case "plain":
+        case "table":
             await state.set_state(FSMDeleteWord.number)
             table = [[item["word"], item["translate"]] for item in words]
             await edit_message(
@@ -162,6 +162,18 @@ async def print_words(callback: types.CallbackQuery, bot: Bot, state: FSMContext
                 keyboard_fn=partial(back_to_dict_kb, code),
                 message=f'<pre>{tabulate(table, headers=["word", "translation"],  tablefmt="presto")}</pre>\n\nTo delete a word, write it',
             )
+        case "plain":
+            await state.set_state(FSMDeleteWord.number)
+            message_to_print = ""
+            for word in words:
+                message_to_print += f'{word["word"]} - {word["translate"]}\n'
+            await edit_message(
+                bot=bot,
+                callback=callback,
+                keyboard_fn=partial(back_to_dict_kb, code),
+                message=message_to_print,
+            )
+            
 
 
 @router.message(FSMDeleteWord.number)

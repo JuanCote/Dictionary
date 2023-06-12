@@ -33,7 +33,7 @@ async def delete_dictionary(callback: types.CallbackQuery, bot: Bot):
     if dict_code != 'delete':
         delete_dictionary_from_db(user_id, dict_code)
     dictionaries = get_dictionaries(user_id)
-    text = "Choose dictionary to delete"
+    text = "Choose dictionary to delete 🗑️"
     if not dictionaries:
         text = "You don't have any dictionaries 🤷‍♂️"
     await edit_message(
