@@ -67,7 +67,7 @@ async def ask_translate(message: types.Message, state: FSMContext):
     translate = translate_word(to_lang=data["code"], word=word)
     await state.update_data(word=word, translate=translate)
     await message.answer(
-        text=f"Automatic translation - {translate} in <b>{data['label']}</b>",
+        text=f"Automatic translation - {translate}",
         parse_mode="HTML",
         reply_markup=ask_translate_kb(),
     )
