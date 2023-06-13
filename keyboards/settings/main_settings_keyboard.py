@@ -7,7 +7,7 @@ def main_settings_kb(is_auto_translate_enable: bool):
         [
             [
                 types.InlineKeyboardButton(
-                    text=f"️🤖 Auto translate - {'on' if is_auto_translate_enable else 'off'}",
+                    text=f"️🤖 Auto translate - {'on' if is_auto_translate_enable else 'off'} (beta)",
                     callback_data="change_settings_auto-translate",
                 ),
             ],
