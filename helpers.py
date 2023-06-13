@@ -1,4 +1,3 @@
-
 from aiogram import Bot, types
 from translate import Translator
 
@@ -6,7 +5,7 @@ from mongo_db import users
 
 
 def translate_word(to_lang, word):
-    translator = Translator(from_lang='en', to_lang=to_lang)
+    translator = Translator(from_lang="autodetect", to_lang=to_lang)
     return translator.translate(word).lower()
 
 
@@ -45,20 +44,24 @@ async def edit_message(
 
 def get_dictionaries(user_id):
     user = users.find_one({"user_id": user_id})
+
     if not user["dictionaries"]:
         return []
-    else:
-        dictionaries = list()
-        for dictionary in user["dictionaries"].keys():
-            for elem in languages_codes:
-                if dictionary in languages_codes[elem]:
-                    dictionaries.append(
-                        {
-                            "code": dictionary,
-                            "label": languages_codes[elem][dictionary],
-                        }
-                    )
-        return dictionaries
+
+    dictionaries = list()
+
+    for dictionary in user["dictionaries"].keys():
+        for elem in languages_codes:
+            if dictionary in languages_codes[elem]:
+                dictionaries.append(
+                    {
+                        "code": dictionary,
+                        "label": languages_codes[elem][dictionary],
+                    }
+                )
+                break
+
+    return dictionaries
 
 
 def delete_dictionary_from_db(user_id: int, dict_code: str):
@@ -78,6 +81,7 @@ languages_codes = {
     "🇨🇳": {"ZH": "中文"},
     "🇯🇵": {"JP": "日本語"},
     "🇺🇸": {"EN": "English"},
+    "🏴󠁧󠁢󠁥󠁮🇺🇸": {"EN": "English"},
     "🇪🇸": {"ES": "Español"},
     "🇫🇷": {"FR": "Français"},
     "🇩🇪": {"DE": "Deutsch"},

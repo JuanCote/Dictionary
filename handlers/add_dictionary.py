@@ -25,7 +25,7 @@ async def add_dictionary(callback: types.CallbackQuery, bot: Bot, state: FSMCont
         callback=callback,
         bot=bot,
         message="Enter the language flag for which you want to add a dictionary 🚩",
-        keyboard_fn=partial(cancel_kb, 'back_to_main')
+        keyboard_fn=partial(cancel_kb, "back_to_main"),
     )
 
 
@@ -35,20 +35,24 @@ async def flag(message: types.Message, bot: Bot, state: FSMContext):
     user_id = message.from_user.id
     flag = message.text
     user = users.find_one({"user_id": user_id})
+
+    print(flag, languages_codes)
     if not flag in languages_codes:
         await bot.send_message(
-            chat_id=chat_id, text="There is no such flag in my list, please try again ⁉️"
+            chat_id=chat_id,
+            text="There is no such flag in my list, please try again ⁉️",
         )
-    else:
-        code = tuple(languages_codes[flag].keys())[0]
-        if code in user["dictionaries"]:
-            await bot.send_message(
-                chat_id=chat_id, text="You already have such a dictionary"
-            )
-        else:
-            await state.clear()
-            users.update_one(
-                {"user_id": user_id}, {"$set": {f"dictionaries.{code}": []}}
-            )
-            await message.answer(text="The dictionary was successfully created 🥳")
-            await message.answer(text=MAIN_TEXT, reply_markup=main_kb())
+        return
+
+    code = tuple(languages_codes[flag].keys())[0]
+
+    if code in user["dictionaries"]:
+        await bot.send_message(
+            chat_id=chat_id, text="You already have such a dictionary"
+        )
+        return
+
+    await state.clear()
+    users.update_one({"user_id": user_id}, {"$set": {f"dictionaries.{code}": []}})
+    await message.answer(text="The dictionary was successfully created 🥳")
+    await message.answer(text=MAIN_TEXT, reply_markup=main_kb())
