@@ -19,6 +19,7 @@ router = Router()
 
 
 class FSMAddWord(StatesGroup):
+    auto_translate_off = State()
     ask_translate = State()
     check_input = State()
 
@@ -46,12 +47,17 @@ async def add_word(callback: types.CallbackQuery, bot: Bot, state: FSMContext):
 
 @router.callback_query(lambda message: message.data.startswith("choose_dict_to_add"))
 async def choose_language(callback: types.CallbackQuery, bot: Bot, state: FSMContext):
+    user_id = callback.from_user.id
     code = callback.data.split("_")[-1]
     for elem in languages_codes:
         if code in languages_codes[elem]:
             label = languages_codes[elem][code]
     await state.update_data(code=code, label=label)
-    await state.set_state(FSMAddWord.ask_translate)
+    settings = users.find_one({"user_id": user_id})["settings"]
+    if settings['auto_translate']:
+        await state.set_state(FSMAddWord.ask_translate)
+    else:
+        await state.set_state(FSMAddWord.auto_translate_off)
     await edit_message(
         bot=bot,
         callback=callback,
@@ -70,6 +76,21 @@ async def ask_translate(message: types.Message, state: FSMContext):
         text=f"Automatic translation - {translate}",
         parse_mode="HTML",
         reply_markup=ask_translate_kb(),
+    )
+
+
+@router.message(FSMAddWord.auto_translate_off)
+async def auto_translate_off(
+    message: types.Message, state: FSMContext
+):
+    word = message.text.strip()
+    await state.update_data(word=word)
+    await state.set_state(FSMAddWord.check_input)
+    data = await state.get_data()
+    await message.answer(
+        text=f"Now write a translation in <b>{data['label']}</b>",
+        parse_mode="HTML",
+        reply_markup=cancel_kb("add_word"),
     )
 
 

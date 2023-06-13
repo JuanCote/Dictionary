@@ -21,11 +21,13 @@ router = Router()
 
 @router.callback_query(Text("settings"))
 async def choose_dictionary_language(callback: types.CallbackQuery, bot: Bot):
+    user_id = callback.from_user.id
+    settings = users.find_one({"user_id": user_id})["settings"]
     await edit_message(
         bot=bot,
         callback=callback,
         message="Settings Menu 🔧",
-        keyboard_fn=main_settings_kb,
+        keyboard_fn=partial(main_settings_kb, is_auto_translate_enable=settings['auto_translate'])
     )
 
 
@@ -37,7 +39,23 @@ async def change_settings(callback: types.CallbackQuery, bot: Bot):
     match message_type:
         case "auto-translate":
             settings = users.find_one({"user_id": user_id})["settings"]
-            print(settings)
+            # Change True to False and False to True
+            settings['auto_translate'] = not settings['auto_translate']
+            users.update_one(
+                {"user_id": user_id}, {"$set": {"settings": settings}}
+            )
+
+    text = "Settings Menu 🔧"
+    settings = users.find_one({"user_id": user_id})["settings"]
+    await edit_message(
+        bot=bot,
+        callback=callback,
+        message=text,
+        keyboard_fn=partial(
+            main_settings_kb,
+            is_auto_translate_enable=settings['auto_translate']
+        ),
+    )
 
 
 @router.callback_query(lambda message: message.data.startswith("dict_delete"))

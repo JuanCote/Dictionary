@@ -2,7 +2,7 @@ from aiogram import types
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 
-def main_settings_kb(is_auto_translate_enable: bool = True):
+def main_settings_kb(is_auto_translate_enable: bool):
     kb = InlineKeyboardBuilder(
         [
             [
