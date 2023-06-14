@@ -13,7 +13,7 @@ def add_action_kb(languages):
         )
     kb.row(
         types.InlineKeyboardButton(
-            text="Create new dictionary", callback_data="add_dictionary"
+            text="➕ Create new dictionary", callback_data="add_dictionary"
         )
     )
     kb.add(types.InlineKeyboardButton(text="⬅️ Back", callback_data="back_to_main"))

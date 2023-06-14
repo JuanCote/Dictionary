@@ -9,7 +9,7 @@ from mongo_db import users
 
 router = Router()
 
-MAIN_TEXT = """📖 Custom dictionary bot. 
+MAIN_TEXT = """📖 Dictionary bot. 
 ⭐ Add new words to the dictionary. 
 ♻️ Repeat your words️.
 👀 View your own dictionaries."""
