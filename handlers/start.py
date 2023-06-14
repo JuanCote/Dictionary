@@ -19,17 +19,13 @@ default_settings = {"auto_translate": True}
 
 @router.message(Command("start"))
 async def start(message: types.Message):
-    try:
-        user_id = message.from_user.id
-        user_in_db = users.find_one({"user_id": user_id})
-        if not user_in_db:
-            users.insert_one(
-                {"user_id": user_id, "dictionaries": {}, "settings": default_settings}
-            )
-        await message.answer(text=MAIN_TEXT, reply_markup=main_kb())
-    except Exception as e:
-        print(e)
-        message.answer("DB_ERROR")
+    user_id = message.from_user.id
+    user_in_db = users.find_one({"user_id": user_id})
+    if not user_in_db:
+        users.insert_one(
+            {"user_id": user_id, "dictionaries": {}, "settings": default_settings}
+        )
+    await message.answer(text=MAIN_TEXT, reply_markup=main_kb())
 
 
 @router.callback_query(Text("back_to_main"))
