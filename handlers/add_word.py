@@ -74,7 +74,7 @@ async def add_list_callback(callback: types.CallbackQuery, bot: Bot, state: FSMC
     await edit_message(
         bot=bot,
         callback=callback,
-        message="Write a list of word pairs in the format:\nword-translation\nword-translation\nMake sure to have a new line between each pair",
+        message="Write a list of word pairs in the format 👇\n\napple-manzana\nhello-zdravo\n\nMake sure to have a new line between each pair",
         keyboard_fn=partial(cancel_kb, 'add_word'),
     )
 
@@ -87,10 +87,12 @@ async def add_list_state(message: types.Message, state: FSMContext):
     list_to_push = list()
     for pair in pairs_list:
         pair_list = pair.split('-')
+        # Removing empty strings from list
+        pair_list = list(filter(bool, pair_list))
         if len(pair_list) != 2:
             await message.answer(
-                text='Wrong list',
-                reply_markup=main_kb(),
+                text='Incorrect list... Try again 😕',
+                reply_markup=cancel_kb('add_word'),
             )
             return
         word, translate = pair_list[0].strip(), pair_list[1].strip()
@@ -98,6 +100,9 @@ async def add_list_state(message: types.Message, state: FSMContext):
     users.update_one(
         {"user_id": user_id},
         {"$push": {f"dictionaries.{data['code']}": {'$each': list_to_push}}},
+    )
+    await message.answer(
+        text="The word list has been successfully added to dictionary 🙌",
     )
     await message.answer(
         text=MAIN_TEXT,
