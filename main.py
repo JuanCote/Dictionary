@@ -4,9 +4,12 @@ import asyncio
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram import Bot, Dispatcher
 from handlers import add_word, start, dictionary, add_dictionary, settings
+from dotenv import load_dotenv
 
 
 async def main():
+    load_dotenv()
+
     API_TOKEN = os.getenv("TELEGRAM_KEY")
 
     bot = Bot(token=API_TOKEN)
