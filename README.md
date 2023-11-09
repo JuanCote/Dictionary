@@ -2,6 +2,8 @@
 
 Welcome to the Aiogram Telegram Bot! This Telegram bot is designed to assist users in their language learning journey. It's built using the Aiogram framework and offers a range of features to help you master new languages with ease.
 
+https://github.com/JuanCote/Dictionary/assets/91831744/2b18c90a-ee44-49cf-b9c8-cf9c414dbd9f
+
 ## Features
 
 - Ability to create custom dictionaries for any language.
